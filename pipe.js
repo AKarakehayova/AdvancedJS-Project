@@ -1,43 +1,31 @@
+const pipeWidth = 90;
+const speed = 3; //пиксели с които тръбата ще се измести при следващ кадър (По Х) //move it to sketch.js
+const gapBetweenPipes = 130;
+const minPipeSize = 150;
+
 function Pipe() {
-  //взима точка за горната тръба (от 20-80% от цялата дължина на екрана, за да няма прекалено ниски или прекалено високи тръби) 
-  this.top = random(height*20/100, height*80/100); // По Y
-  this.x = width; //стартова точка на тръбата (По Х) width и height са глобални променливи от библиотеката за рендене
-  this.width = 80; //ширина на тръбата (По Х)
-  this.speed = 3; //пиксели с които тръбата ще се измести при следващ кадър (По Х)
-  this.gapBetweenPipes = 130; //растояние между двете тръби (по Y)
-  this.bottom = this.top + this.gapBetweenPipes; //начална точка на долната тръба (по Y)
+  this.top = random(gapBetweenPipes + minPipeSize, height - gapBetweenPipes - minPipeSize); 
+  this.x = width;
+  this.width = pipeWidth;
+  this.bottom = this.top + gapBetweenPipes;
   
   this.hit = false;
-  this.highlight = false; //оцветява тръбите
+  this.highlight = false;
 
   this.hits = function(bird) {
-
     if (this.hit) {
       return true;
     }
-    //най-горната точка на пилето < начална точка на горната тръба по У
-    //най-долна точка на пилето > началната точка на долната тръба по У
-    //най-дясната точка на пилето е между началото и края на тръбата (по Х)
-    if (bird.top < this.top || bird.bottom > this.bottom) { 
 
-      console.log("##############")
-      console.log(bird.top + " " + this.top)
-      console.log(bird.bottom + " " + this.x)
-      console.log(bird.right + " " + this.x + this.width)
-      
-      if (bird.right > this.x && bird.right < this.x + this.width) {
-        this.hit = true;
+    if (bird.top < this.top || bird.bottom > this.bottom) {
+      if (bird.right > this.x && bird.left < this.x + this.width) {
         this.highlight = true;
-        bird.alive = false;
-
-        console.log(bird.top + " " + this.top)
-        console.log(bird.bottom + " " + this.x)
-        console.log(bird.right + " " + this.x + this.width)
+        this.hit = true;
         
         return true;
       }
     }
-    this.highlight = false;
+    
     return false;
   }
 
@@ -51,15 +39,18 @@ function Pipe() {
   }
 
   this.update = function() {
-    this.x -= this.speed;
+    this.x -= speed;
   }
 
   this.offscreen = function() {
-    // console.log(this.x, this.width)
     if (this.x < -this.width) {
       return true;
     } else {
       return false;
     }
+  }
+
+  this.getRightPoint = function() {
+    return this.x + this.width;
   }
 }
