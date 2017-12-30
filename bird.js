@@ -1,50 +1,84 @@
+const size = 32; //диаметър на пилето
+const birdStartPoin = 90 //да се намира винаги на 90 пиксел
+
+const gravity = 0.9;
+const lift = -15; //пиксели с които пилето ще се измести нагоре при flap();
+const velocity = 0; //скорост на пилето
+const airResistance = 0.8;
+
+// const speed = 3; //todo get from sketchjs
+
 function Bird() {
-  this.size = 32; //диаметър на пилето
   this.y = height / 2; //да почва от средата на екрана 
-  this.x = 90; //да се намира винаги на 90 пиксел ## (май трябва да е константа)
-
+  this.x = birdStartPoin;
+  this.velocity = velocity;
   this.alive = true;
+  this.totalTravelledDistance = 0;
 
-  //тия могат да се туийкват, ама така са чок гюзел
-  this.gravity = 0.9; 
-  this.lift = -15; //пиксели с които пилето ще се измести нагоре при flap();
-  this.velocity = 0; //скорост на пилето
-  this.airResistance = 0.8;
+  //todo add total travelled distance
 
   this.show = function() {
     fill(255);
-    rect(this.x, this.y, this.size, this.size);
-    // ellipse(this.x, this.y, this.size, this.size);
+    rect(this.x, this.y, size, size);
+    // ellipse(this.x, this.y, size, size);
   }
 
   this.flap = function() {
-    this.velocity += this.lift;
+    this.velocity += lift;
   }
 
   this.update = function() {
-    // на всеки кадър пилето пада заради гравитацията
-    // air resistance-a е за да не излита пилето извън екрана с 3 flap()-a, колкото по-ниско число, толкова по стабилно пиле
-    this.velocity += this.gravity;
-    this.velocity *= this.airResistance;
-    this.y += this.velocity;
-
-    //3те крайни точки на пилето, които ни интересуват
-    this.top = this.y - this.size / 2;
-    this.bottom = this.y + this.size / 2;
-    this.right = this.x + this.size / 2;
-
-    if (this.y > height) {
-      this.y = height;
-      this.velocity = 0;
-      this.alive = false;
-    }
-
-    if (this.y < 0) {
-      this.y = 0;
-      this.velocity = 0;
-      this.alive = false;
+    this.fall();
+    this.updateBirdPosition();
+    
+    if(!this.isInGameField()) {
+      this.die();
     }
   }
 
+  this.die = function() {
+    this.alive = false;
+  }
 
+  this.updateBirdPosition = function() {
+    this.top = this.y;
+    this.bottom = this.y + size;
+    this.left = this.x;
+    this.right = this.x + size;
+  }
+
+  this.fall = function() {
+    this.calculateVelocity();
+    this.y += this.velocity;
+    this.totalTravelledDistance += 3;//todo get from speed
+  }
+
+  this.calculateVelocity = function() {
+    this.velocity = (this.velocity + gravity) * airResistance;
+  }
+
+  this.isInGameField = function() {
+    if (this.bottom > height || this.top < 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  this.debug = function() {
+    console.log("Bird Top:"  + this.top);
+    console.log("Bird Bottom:" + this.bottom);
+    console.log("Bird Left:" + this.left);
+    console.log("Bird Right:" + this.right);
+  }
+
+  //ai
+
+  this.horizontalDistance = function(pipe) {
+    return pipe.x - this.right;
+  }
+
+  this.verticalDistance = function(pipe) {
+    return Math.min(abs(this.bottom - pipe.bottom), abs(this.top - pipe.top));
+  }
 }
